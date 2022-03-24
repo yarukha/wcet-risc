@@ -1,0 +1,1 @@
+let prog lb =Riscparser.program Risclexer.token lb ;; 

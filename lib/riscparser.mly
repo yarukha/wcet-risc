@@ -1,6 +1,5 @@
 %{
 
-  open Lexing
   open Risc
 
 %}
@@ -30,7 +29,7 @@ program:
     ;
 
 line:
-    |i = ident ; BEGIN       {Ident (i)} 
+    |i = ident ; BEGIN       {Label (i)} 
     |op = op1; v1 = value   {Instr (Op (op, v1))}
     |op = op2 ; v1 = value; COMA; v2=value  {Instr(Op2 (op,v1,v2))}
     |op = op3; v1 = value; COMA; v2=value; COMA; v3 = value   {Instr(Op3 (op,v1,v2,v3))}
@@ -38,8 +37,8 @@ line:
     ;
 
 ident: 
-    |DOT; l = STRING {Id (l)} 
-    |f=STRING {Function (f)} 
+    |DOT; l = STRING {l} 
+    |f=STRING {f} 
 
 op1:
     |J {J}

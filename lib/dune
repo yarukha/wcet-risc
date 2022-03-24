@@ -1,2 +1,8 @@
 (library
  (name wcetrisc))
+
+
+(menhir
+  (modules riscparser))
+
+(ocamllex risclexer)
