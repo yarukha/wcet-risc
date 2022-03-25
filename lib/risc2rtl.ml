@@ -11,8 +11,8 @@ let value_to_int v :Rtl.value=
 
 let value_to_reg v = 
   match v with 
-  |Risc.R(r)->Rtl.R(r)
-  |_->Rtl.R("not a register")
+  |Risc.R(r)->R(r)
+  |Risc.Int(i)-> R(Printf.sprintf "int %i" i)
 
 let translate_program (p: Risc.program) = 
   let blocks = Hashtbl.create 32 in 
@@ -25,10 +25,12 @@ let translate_program (p: Risc.program) =
     match i with 
     |Op (op,v) -> (
       let l = match v with 
-      |L(s)-> s |_-> failwith "wonrg unop argument" 
+      |R(s)->s
+      |_->failwith "int here" 
     in 
     match op with
-      |J -> (Cont::Branch(l)::current_block , l)
+      |J -> (Branch(l)::current_block , current_label)
+      |Jr-> 
       |_-> failwith "1op not implemented yet" 
       )
 
@@ -41,7 +43,7 @@ let translate_program (p: Risc.program) =
     |Op3 (op,v1,v2,v3)->(
       let r1 = value_to_reg v1 
       and r2 = value_to_reg v2 and i2 = value_to_int v2 
-      and r3 = value_to_reg v2 and i3 = value_to_int v3
+      and r3 = value_to_reg v3 and i3 = value_to_int v3
       in let new_b = (
       match op with 
       |Addi -> 
@@ -76,12 +78,12 @@ let translate_program (p: Risc.program) =
     |Instr(i)::q-> (
       let new_b,new_l = translate_instr i current_block current_label in 
       if new_l != current_label then (
-        add_block current_block current_label;
+        add_block (Cont::current_block) current_label;
         translate_line_list q new_b new_l  )
       else 
         translate_line_list q new_b current_label
     )
-    |[] -> add_block current_block current_label
+    |[] -> add_block (Cont::current_block) current_label
   in 
   match p with 
   |[]->failwith "empty risc program"

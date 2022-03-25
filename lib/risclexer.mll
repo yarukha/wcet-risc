@@ -19,7 +19,7 @@
 let digit = ['0'-'9']
 let number = ['-']? digit+
 let alpha = ['a'-'z' 'A'-'Z']
-let ident = ['a'-'z' '_'] (alpha | '_' | digit)*
+let ident = ['a'-'z' '_' 'A'-'Z' '.'] (alpha | '_' | digit)*
 
 
 rule token = parse
@@ -30,7 +30,6 @@ rule token = parse
     | ":" {BEGIN}
     | "(" {L_BRACE}
     | ")" {R_BRACE}
-    | "." {DOT}
     |ident as s {try_string s}
     |number as i    {INT( int_of_string i)}
     |_ { failwith ("Unknown character : " ^ (lexeme lexbuf)) }

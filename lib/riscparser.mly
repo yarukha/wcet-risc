@@ -8,7 +8,6 @@
 %token BEGIN
 %token L_BRACE
 %token R_BRACE
-%token DOT
 
 %token <string> STRING 
 %token <int> INT
@@ -36,8 +35,7 @@ line:
     |op = op3; v1 = value; COMA; v2=value; L_BRACE; v3 = value; R_BRACE    {Instr(Op3 (op,v1,v2,v3))}
     ;
 
-ident: 
-    |DOT; l = STRING {l} 
+ident:
     |f=STRING {f} 
 
 op1:
@@ -59,7 +57,6 @@ op3:
     ;
 
 value:
-    |r = STRING {R (r)}
+    |r = STRING { R (r)}
     |i = INT    {Int (i)}
-    |DOT; l= STRING { L (l) };
 

@@ -4,7 +4,7 @@ type triop = Addi | Sw | Lw | Slli | Add | Blt
 
 type label = string
 
-type value = R of string | Int of int | L of label
+type value = R of string | Int of int
 
 type instruction = 
       |Op of unop * value

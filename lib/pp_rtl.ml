@@ -41,10 +41,10 @@ let pp_instruction (i:instructions) =
 
 let pp_block b = 
   List.fold_left (
-    fun s i -> sprintf "%s\n \t %s" s (pp_instruction i)
-  ) "" b
+    fun s i -> sprintf "%s\n\t\t%s" s (pp_instruction i)
+  ) "" (List.rev b)
 
 
 let pp_program p = 
-  Hashtbl.fold (fun l b s -> sprintf "%s\n.%s\n%s" s l (pp_block b) ) p.blocks ""
+  Hashtbl.fold (fun l b s -> sprintf "%s%s%s\n\n" s l (pp_block b) ) p.blocks ""
 
