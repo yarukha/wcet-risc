@@ -13,13 +13,21 @@
             |"slli" -> SLLI
             |"add" -> ADD
             |"blt" -> BLT 
+
+            |"fsd"->FSD
+            |"fld"-> FLD
+            |"fgt.d"->FGT_D
+            |"beq"->BEQ
+            |"li"->LI
+            |"nop"->NOP
+
             |s -> STRING(s)
 }
 
 let digit = ['0'-'9']
 let number = ['-']? digit+
 let alpha = ['a'-'z' 'A'-'Z']
-let ident = ['a'-'z' '_' 'A'-'Z' '.'] (alpha | '_' | digit)*
+let ident = ['a'-'z' '_' 'A'-'Z' '.'] (alpha | '_' | '.' | digit)*
 
 
 rule token = parse

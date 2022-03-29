@@ -12,9 +12,10 @@
 %token <string> STRING 
 %token <int> INT
 
+%token NOP
 %token J JR 
-%token MV
-%token ADDI SW LW SLLI ADD BLT 
+%token MV LI
+%token ADDI SW LW SLLI ADD BLT FLD FSD FGT_D BEQ
 
 %token EOF
 
@@ -29,6 +30,7 @@ program:
 
 line:
     |i = ident ; BEGIN       {Label (i)} 
+    |NOP {Instr(Monop(Nop))}
     |op = op1; v1 = value   {Instr (Op (op, v1))}
     |op = op2 ; v1 = value; COMA; v2=value  {Instr(Op2 (op,v1,v2))}
     |op = op3; v1 = value; COMA; v2=value; COMA; v3 = value   {Instr(Op3 (op,v1,v2,v3))}
@@ -38,6 +40,7 @@ line:
 ident:
     |f=STRING {f} 
 
+
 op1:
     |J {J}
     |JR {Jr}
@@ -45,6 +48,7 @@ op1:
 
 op2:
     |MV {Mv}
+    |LI {Li}
     ;
 
 op3:
@@ -54,6 +58,10 @@ op3:
     |SLLI {Slli}
     |ADD {Add}
     |BLT {Blt}
+    |FLD {Fld}
+    |FSD {Fsd}
+    |FGT_D {Fgt_d}
+    |BEQ {Beq}
     ;
 
 value:

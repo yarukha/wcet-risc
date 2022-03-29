@@ -26,6 +26,7 @@ let translate_program (p:Risc.program) =
   let translate_instr (i:Risc.instruction) current_block  :block= 
 
     match i with 
+    |Monop(_)->Scratch (R("x0"))::current_block
     |Op (op,v) -> (
       let l = match v with 
       |R(s)->s
@@ -41,6 +42,9 @@ let translate_program (p:Risc.program) =
       match op with 
       |Mv -> 
         Set(r1,r2)::current_block
+
+        (*this needs change obviously*)
+      |_-> Scratch(R("x0"))::current_block
     )
     |Op3 (op,v1,v2,v3)->(
       let r1 = value_to_reg v1 
@@ -49,24 +53,20 @@ let translate_program (p:Risc.program) =
       in
       match op with 
       |Addi -> 
-        let b = Seti(t0,i3)::current_block in 
-        Add(r1,r2,t0)::b
+        Add(r1,r2,t0)::Seti(t0,i3)::current_block
       |Sw -> 
-        let b = Seti(t0,i2)::current_block in 
-        let b = Add(t0,r3, t0)::b in 
-        Store(r1, t0, A)::b
+        Store(r1, t0, A)::Add(t0,r3, t0)::Seti(t0,i2)::current_block
       |Lw -> 
-        let b = Seti(t0,i2)::current_block in 
-        let b = Add(t0,r3,t0)::b in 
-        Load(r1,t0,A)::b
+        Load(r1,t0,A)::Add(t0,r3,t0)::Seti(t0,i2)::current_block
       |Slli -> 
-        let b = Seti(t0,i3)::current_block in 
-        Shl(r1,r2,t0)::b
+        Shl(r1,r2,t0)::Seti(t0,i3)::current_block
       |Add -> 
         Add(r1,r2,r3)::current_block
       |Blt -> 
-        let b = Cmp(t0,r1,r2)::current_block in 
-        If(Signed(Less),t0,i3)::b
+        If(Signed(Less),t0,i3)::Cmp(t0,r1,r2)::current_block 
+
+        (*obviously this need to be changed*)
+      |_-> Scratch(R("x0"))::current_block
     )
     
   in 

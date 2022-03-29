@@ -1,12 +1,16 @@
+type monop = Nop
 type unop = J | Jr
-type binop = Mv
-type triop = Addi | Sw | Lw | Slli | Add | Blt 
+type binop = Mv |Li
+type triop = 
+      Addi | Sw | Lw | Slli | Add | Blt 
+      |Fld | Fsd | Fgt_d | Beq
 
 type label = string
 
 type value = R of string | Int of int
 
 type instruction = 
+      |Monop of monop
       |Op of unop * value
       |Op2 of binop * value * value  
       |Op3 of triop * value * value * value
