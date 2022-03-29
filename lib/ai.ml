@@ -22,3 +22,20 @@ let update_block b s =
     )
   in foo [(0,s)] bottom 
         
+(*
+let interpretation prog = 
+  let labels_arrow = Hashtbl.create 32 in 
+  let add_label_arrows l b = 
+    let arrows = 
+    List.fold_left (
+      fun list inst -> match inst with |Branch(l')->l'::list |_-> list
+    ) [] b 
+    in Hashtbl.add labels_arrow l arrows in 
+  Hashtbl.iter add_label_arrows prog.blocks;
+
+  (*again, a subfunction working on a maintained list*)
+  (*this time of the labels to visit*)
+  let rec foo working_list return_state = 
+    match working_list with 
+    |[]->
+*)
