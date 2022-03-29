@@ -42,7 +42,7 @@ let pp_instruction (i:instructions) =
 let pp_block b = 
   List.fold_left (
     fun s i -> sprintf "%s\n\t\t%s" s (pp_instruction i)
-  ) "" (List.rev b)
+  ) "" b
 
 
 let pp_program p = 

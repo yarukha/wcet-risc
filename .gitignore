@@ -3,3 +3,4 @@ _build/
 
 test.risc
 test.rtl
+maxarray.risc

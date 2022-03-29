@@ -14,13 +14,16 @@ let value_to_reg v =
   |Risc.R(r)->R(r)
   |Risc.Int(i)-> R(Printf.sprintf "int %i" i)
 
-let translate_program (p: Risc.program) = 
+
+let translate_program (p:Risc.program) = 
   let blocks = Hashtbl.create 32 in 
   let add_block b l = 
-    Hashtbl.add blocks l b 
+    print_string ("added the label "^l^"\n");
+    (*we reverse the block here*)
+    Hashtbl.add blocks l (List.rev b) 
   in
 
-  let translate_instr (i:Risc.instruction) (current_block:Rtl.block) current_label = 
+  let translate_instr (i:Risc.instruction) current_block  :block= 
 
     match i with 
     |Op (op,v) -> (
@@ -29,22 +32,21 @@ let translate_program (p: Risc.program) =
       |_->failwith "int here" 
     in 
     match op with
-      |J -> (Branch(l)::current_block , current_label)
-      |Jr-> 
-      |_-> failwith "1op not implemented yet" 
+      |J -> Branch(l)::current_block
+      |Jr-> Scratch(value_to_reg v)::current_block
       )
 
     |Op2 (op,v1,v2) -> (
       let r1 = value_to_reg v1 and r2 = value_to_reg v2 in 
       match op with 
       |Mv -> 
-        (Set(r1,r2)::current_block, current_label)
+        Set(r1,r2)::current_block
     )
     |Op3 (op,v1,v2,v3)->(
       let r1 = value_to_reg v1 
       and r2 = value_to_reg v2 and i2 = value_to_int v2 
       and r3 = value_to_reg v3 and i3 = value_to_int v3
-      in let new_b = (
+      in
       match op with 
       |Addi -> 
         let b = Seti(t0,i3)::current_block in 
@@ -65,31 +67,26 @@ let translate_program (p: Risc.program) =
       |Blt -> 
         let b = Cmp(t0,r1,r2)::current_block in 
         If(Signed(Less),t0,i3)::b
-      )
-      in new_b,current_label)
-    
-
+    )
     
   in 
-  let rec translate_line_list (p':Risc.program) current_block current_label :unit= 
+  let rec translate_line_list (p':Risc.program) current_block current_label= 
     match p' with 
-    |Label(l)::q-> 
-      translate_line_list q [] l 
-    |Instr(i)::q-> (
-      let new_b,new_l = translate_instr i current_block current_label in 
-      if new_l != current_label then (
-        add_block (Cont::current_block) current_label;
-        translate_line_list q new_b new_l  )
-      else 
-        translate_line_list q new_b current_label
-    )
-    |[] -> add_block (Cont::current_block) current_label
+    |[]->add_block current_block current_label
+    |line::q -> 
+      match line with 
+      |Instr(i)->
+        translate_line_list q (translate_instr i current_block) current_label
+      |Label(l)->
+        add_block current_block current_label;
+        translate_line_list q [] l 
+
   in 
   match p with 
   |[]->failwith "empty risc program"
-  |Label(l)::_-> 
-    let entry = l in translate_line_list p [] entry; 
-    {entry = entry; blocks = blocks}
+  |Label(l)::q-> 
+    translate_line_list q [] l; 
+    {entry = l; blocks = blocks}
   |_->failwith "no label at beginning of risc program"
 
 
