@@ -11,5 +11,4 @@ let () =
   let output_file =  "./rtl_output/"^(Filename.chop_extension (Filename.basename file))^".rtl" in
   let out = open_out output_file in
   Printf.fprintf out "%s" (Pp_rtl.pp_program rtl_p);
-  print_string (Printf.sprintf "%i\n" (Ai.mesure_program rtl_p));;
 
