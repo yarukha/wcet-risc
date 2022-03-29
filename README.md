@@ -7,4 +7,4 @@ To compile:
 
 to execute: 
 
-`dune exec wcetrisc`
+`dune exec wcetrisc filename.risc ` 

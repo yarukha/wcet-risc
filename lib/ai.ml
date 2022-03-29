@@ -35,15 +35,15 @@ let interpretation prog =
   Hashtbl.iter (fun l _ -> Hashtbl.add pred_labels l []) prog.blocks;
   let update_pred l pred = 
     let current_preds = Hashtbl.find pred_labels l in
-    Hashtbl.add pred_labels l (pred::current_preds) 
+    Hashtbl.replace pred_labels l (pred::current_preds) 
   in
-  let rec update_pred_from_block l block = 
+  let rec update_pred_from_block pred block = 
     match block with 
     |[]->()
-    |Branch(pred)::q->
+    |Branch(l)::q->
       update_pred l pred;
       update_pred_from_block l q
-    |_::q->update_pred_from_block l q
+    |_::q->update_pred_from_block pred q
   in
   Hashtbl.iter update_pred_from_block prog.blocks;
 
@@ -65,10 +65,12 @@ let interpretation prog =
       let pred_abstraction_list = List.map (fun l' -> Hashtbl.find abstract_values l') pred_list in
       let s = update_block (Hashtbl.find prog.blocks l) (join_list pred_abstraction_list ) in 
       if s != (Hashtbl.find abstract_values l) then (
-        Hashtbl.add abstract_values l s;
+        Hashtbl.replace abstract_values l s;
         foo (pred_list@q))
       else foo q
-  in foo [prog.entry];
+  in 
+  Printf.printf "entry label = %s\n" (prog.entry);
+  foo [prog.entry];
 
   abstract_values
 
@@ -77,6 +79,5 @@ let interpretation prog =
 
 let calcul_wcet prog = 
   let abstract_values = interpretation prog in 
-  print_int (Hashtbl.length abstract_values);
   Hashtbl.iter (fun l s -> print_string (Printf.sprintf "%s wcet= %i\n" l s)) abstract_values;
   Hashtbl.fold (fun _ a b -> max a b) abstract_values 0

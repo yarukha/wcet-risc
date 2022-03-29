@@ -65,7 +65,7 @@ let translate_program (p:Risc.program) =
       |Add -> 
         Add(r1,r2,r3)::current_block
       |Blt -> 
-        If(Signed(Less),t0,i3)::Cmp(t0,r1,r2)::current_block 
+        Branch(value_to_label v3)::If(Signed(Less),t0,i3)::Cmp(t0,r1,r2)::current_block 
       |Fld -> 
         Load(r1,t0,B)::Add(t0,r3,t0)::Seti(t0,i2)::current_block
       |Fsd ->
