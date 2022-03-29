@@ -14,6 +14,10 @@ let value_to_reg v =
   |Risc.R(r)->R(r)
   |Risc.Int(i)-> R(Printf.sprintf "int %i" i)
 
+let value_to_label (rt:Risc.value) = 
+  match rt with 
+  |R(l)->l
+  |_->failwith "conversion of register to label failed"
 
 let translate_program (p:Risc.program) = 
   let blocks = Hashtbl.create 32 in 
@@ -28,9 +32,7 @@ let translate_program (p:Risc.program) =
     match i with 
     |Monop(_)->Scratch (R("x0"))::current_block
     |Op (op,v) -> (
-      let l = match v with 
-      |R(s)->s
-      |_->failwith "int here" 
+      let l = value_to_label v
     in 
     match op with
       |J -> Branch(l)::current_block
@@ -64,7 +66,14 @@ let translate_program (p:Risc.program) =
         Add(r1,r2,r3)::current_block
       |Blt -> 
         If(Signed(Less),t0,i3)::Cmp(t0,r1,r2)::current_block 
+      |Fld -> 
+        Load(r1,t0,B)::Add(t0,r3,t0)::Seti(t0,i2)::current_block
+      |Fsd ->
+        Store(r1, t0, B)::Add(t0,r3, t0)::Seti(t0,i2)::current_block
+      |Beq ->
+        Branch(value_to_label v3)::If(Unsigned(Eq),t0,1)::Cmp(t0,r1,r2)::current_block
 
+        
         (*obviously this need to be changed*)
       |_-> Scratch(R("x0"))::current_block
     )

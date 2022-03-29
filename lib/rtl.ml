@@ -7,7 +7,7 @@ type label = string
 type rt = R of registers | T of temporaries 
 type value = int
 
-type int_type = A
+type int_type = A |B
 type cmp = Eq | Noteq | Less | Lesseq | Grt | Grteq 
 type scmp = Signed of cmp | Unsigned of cmp 
 
