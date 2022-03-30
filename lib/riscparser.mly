@@ -13,9 +13,9 @@
 %token <int> INT
 
 %token NOP
-%token J JR 
+%token J JR CALL
 %token MV LI
-%token ADDI SW LW SLLI ADD BLT FLD FSD FGT_D BEQ
+%token ADDI SW LW SLLI ADD BLT FLD FSD FGT_D BEQ BNE MUL
 
 %token EOF
 
@@ -44,6 +44,7 @@ ident:
 op1:
     |J {J}
     |JR {Jr}
+    |CALL {Call}
     ;
 
 op2:
@@ -62,6 +63,8 @@ op3:
     |FSD {Fsd}
     |FGT_D {Fgt_d}
     |BEQ {Beq}
+    |BNE {Bne}
+    |MUL {Mul}
     ;
 
 value:

@@ -13,13 +13,16 @@
             |"slli" -> SLLI
             |"add" -> ADD
             |"blt" -> BLT 
-
             |"fsd"->FSD
             |"fld"-> FLD
             |"fgt.d"->FGT_D
             |"beq"->BEQ
             |"li"->LI
             |"nop"->NOP
+            |"bne"->BNE 
+            |"call"->CALL 
+            |"mul"->MUL
+            
 
             |s -> STRING(s)
 }

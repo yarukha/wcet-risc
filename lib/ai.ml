@@ -6,78 +6,83 @@ let update_instr (inst:instructions) s =
   match inst with
   |_-> s + 1
 
-let update_block b s = 
-  let n = List.length b in 
-  (*subfunction maintaining the working list of (int,sets)*)
-  let rec foo working_list return_state = 
-    match working_list with 
-    |[]->return_state 
-    |(i,s')::q-> (
-      if i >= n then 
-        union s' return_state 
-      else 
-      match List.nth b i with 
-      |If(_,_,d)->foo ((i+1,s')::(i+d,s')::q) return_state
-      |instr->foo ((i+1,update_instr instr s')::q) return_state
-    )
-  in foo [(0,s)] bot
+let rec update_block b s = 
+  let rec nth_list l n = 
+    match l with 
+    |[]->[]
+    |x::q-> if n =0 then x::q else nth_list q (n-1)
+  in
+  match b with 
+  |[]->s 
+  |inst::q->(
+    let s' = update_instr inst s in 
+    match inst with 
+    |If(_,_,offset)->
+      union (update_block q s') (update_block (nth_list b offset) s')
+    |_-> update_block q s' 
+  )
+
         
 
 let interpretation prog = 
-
-  Printf.printf "the stored labels are %s\n\n" (Hashtbl.fold (fun l _ s -> s^" "^l) prog.blocks "");
-
-
-  (*NEEDS TO BE DEBUGGED*)
-  (*all of this is to create a nice connection between each block and its predecessors*)
-  let pred_labels = Hashtbl.create 32 in 
-  (*this ensures that all the predecessors lists are initialised*)
-  Hashtbl.iter (fun l _ -> Hashtbl.add pred_labels l []) prog.blocks;
-  let update_pred l pred = 
-    let current_preds = Hashtbl.find pred_labels l in
-    Hashtbl.replace pred_labels l (pred::current_preds) 
-  in
-  let rec update_pred_from_block pred block = 
-    match block with 
-    |[]->()
-    |Branch(l)::q->
-      update_pred l pred;
-      update_pred_from_block l q
-    |_::q->update_pred_from_block pred q
-  in
-  Hashtbl.iter update_pred_from_block prog.blocks;
-
-  (*used for debug*)
+  (*All of this is just to initialise hashtbl of predecessors and successors of each labels*)
+  let blocks = prog.blocks in 
+  let successors = Hashtbl.create 32 in 
+  let predecessors = Hashtbl.create 32 in 
+  (*we create both tables at the same time*)
   Hashtbl.iter (
-    fun l pred -> print_string (
-      (List.fold_left (fun a b -> a^" "^b)  (l^" preds= ") pred)^"\n";
-      )
-      ) pred_labels;
-  print_newline ();
+    fun l _ -> Hashtbl.add successors l []; Hashtbl.add predecessors l []) blocks;
+  let get_successors b = 
+    let rec foo b' stack = match b' with |[]->stack |Branch(l)::q-> foo q (l::stack) |_::q -> foo q stack 
+  in foo b []
 
+  in let update_predecessors l succ_list = 
+    List.iter (
+      fun s -> let pred_list = Hashtbl.find predecessors s in 
+              Hashtbl.replace predecessors s (l::pred_list)) succ_list
+  in
+  (*update the successors*)
+  Hashtbl.iter (
+    fun l b -> Hashtbl.replace successors l (get_successors b)
+  ) blocks;
+  (*now update the predecessors*)
+  Hashtbl.iter update_predecessors successors;
+
+  (*Now for the real interpretation*)
   let abstract_values = Hashtbl.create 32 in 
-  Hashtbl.iter (fun l _ -> Hashtbl.add abstract_values l bot) prog.blocks;
-  let rec foo working_list = 
-    match working_list with 
-    |[]->();
-    |l::q->
-      let pred_list = Hashtbl.find pred_labels l in 
-      let pred_abstraction_list = List.map (fun l' -> Hashtbl.find abstract_values l') pred_list in
-      let s = update_block (Hashtbl.find prog.blocks l) (join_list pred_abstraction_list ) in 
-      if s != (Hashtbl.find abstract_values l) then (
-        Hashtbl.replace abstract_values l s;
-        foo (pred_list@q))
-      else foo q
-  in 
-  Printf.printf "entry label = %s\n" (prog.entry);
-  foo [prog.entry];
+  (*all blocks are first interpreted as bot*)
+  Hashtbl.iter (fun l _ -> Hashtbl.add abstract_values l bot) blocks;
 
-  abstract_values
+
+  let rec run_through_cfg l = 
+    let succ_list = Hashtbl.find successors l in 
+    (* Printf.printf "%s successors:" l;
+    List.iter (fun s -> Printf.printf " %s " s) succ_list;
+    print_newline (); *)
+
+    let pred_list = Hashtbl.find predecessors l in 
+    (* Printf.printf "%s predecessors:" l;
+    List.iter (fun s -> Printf.printf " %s " s) pred_list;
+    print_newline (); *)
+
+    let values_of_pred = List.map (fun p -> Hashtbl.find abstract_values p) pred_list in 
+    let b = Hashtbl.find blocks l in 
+    let old_value = Hashtbl.find abstract_values l in 
+    (* Printf.printf "join value of pred %i\n" (join_list values_of_pred); *)
+    let new_value = update_block b (join_list values_of_pred) in 
+    (* Printf.printf "%s old %i new %i\n\n" l old_value new_value; *)
+    if old_value != new_value then (
+      Hashtbl.replace abstract_values l new_value;
+      List.iter  run_through_cfg succ_list)
+    else ();    
+    
+  in run_through_cfg prog.entry;
+  abstract_values 
+
 
 
 
 
 let calcul_wcet prog = 
   let abstract_values = interpretation prog in 
-  Hashtbl.iter (fun l s -> print_string (Printf.sprintf "%s wcet= %i\n" l s)) abstract_values;
-  Hashtbl.fold (fun _ a b -> max a b) abstract_values 0
+  Hashtbl.fold (fun _ v m -> max v m) abstract_values 0

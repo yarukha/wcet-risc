@@ -1,9 +1,10 @@
 type monop = Nop
-type unop = J | Jr
+type unop = J | Jr |Call
 type binop = Mv |Li
 type triop = 
       Addi | Sw | Lw | Slli | Add | Blt 
       |Fld | Fsd | Fgt_d | Beq
+      |Bne |Mul
 
 type label = string
 
