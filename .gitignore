@@ -1,2 +1,3 @@
 _build/
 rtl_output/*
+!rtl_output/.gitkeep
