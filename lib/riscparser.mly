@@ -12,47 +12,38 @@
 %token <string> STRING 
 %token <int> INT
 
-%token NOP
+%token NOP RET
 %token J JR CALL
 %token MV LI
-%token ADDI SW LW SLLI ADD BLT FLD FSD FGT_D BEQ BNE MUL
+%token ADDI SW LW SLLI ADD BLT FLD FSD FGT_D BEQ BNE MUL LUI
 
 %token EOF
 
 %start program
-%type  <Risc.program> program 
+%type  <Risc.program option> program 
 %%
 
 program: 
-    |p= list(line) ;EOF {p}
-    |EOF    {failwith "empty file"}
+    |p= nonempty_list(line) EOF {Some(p)}
+    |EOF    {None}
     ;
 
 line:
-    |i = ident ; BEGIN       {Label (i)} 
-    |NOP {Instr(Monop(Nop))}
-    |op = op1; v1 = value   {Instr (Op (op, v1))}
-    |op = op2 ; v1 = value; COMA; v2=value  {Instr(Op2 (op,v1,v2))}
-    |op = op3; v1 = value; COMA; v2=value; COMA; v3 = value   {Instr(Op3 (op,v1,v2,v3))}
-    |op = op3; v1 = value; COMA; v2=value; L_BRACE; v3 = value; R_BRACE    {Instr(Op3 (op,v1,v2,v3))}
+    |i = STRING ; BEGIN       {Label (i)} 
+    |RET {Inst(Ret,Null,Null,Null)}
+    |NOP {Inst(Nop,Null,Null,Null)}
+    |op = op; v1 = value   {Inst (op, v1,Null,Null)}
+    |op = op ; v1 = value; COMA; v2=value  {Inst(op,v1,v2,Null)}
+    |op = op; v1 = value; COMA; v2=value; COMA; v3 = value   {Inst(op,v1,v2,v3)}
+    |op = op; v1 = value; COMA; v2=value; L_BRACE; v3 = value; R_BRACE    {Inst(op,v1,v2,v3)}
     ;
 
-ident:
-    |f=STRING {f} 
-
-
-op1:
+op:
     |J {J}
     |JR {Jr}
     |CALL {Call}
-    ;
-
-op2:
     |MV {Mv}
     |LI {Li}
-    ;
-
-op3:
     |ADDI {Addi}
     |SW {Sw}
     |LW {Lw}
@@ -65,6 +56,7 @@ op3:
     |BEQ {Beq}
     |BNE {Bne}
     |MUL {Mul}
+    |LUI {Lui}
     ;
 
 value:
