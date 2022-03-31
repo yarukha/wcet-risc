@@ -29,13 +29,13 @@ program:
     ;
 
 line:
-    |i = STRING ; BEGIN       {Label (i)} 
+    |l = STRING ; BEGIN       {Label (l)} 
     |RET {Inst(Ret,Null,Null,Null)}
     |NOP {Inst(Nop,Null,Null,Null)}
     |op = op; v1 = value   {Inst (op, v1,Null,Null)}
     |op = op ; v1 = value; COMA; v2=value  {Inst(op,v1,v2,Null)}
     |op = op; v1 = value; COMA; v2=value; COMA; v3 = value   {Inst(op,v1,v2,v3)}
-    |op = op; v1 = value; COMA; v2=value; L_BRACE; v3 = value; R_BRACE    {Inst(op,v1,v2,v3)}
+    |op = op; v1 = value; COMA; v2=value; L_BRACE; v3 = value; R_BRACE  {Inst(op,v1,v2,v3)}
     ;
 
 op:
