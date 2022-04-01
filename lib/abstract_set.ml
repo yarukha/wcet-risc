@@ -2,7 +2,7 @@ type abstract_set = int
 
 let bot = 0
 
-let top = 100
+let top = 1000000
 
 
 let union s1 s2 = 

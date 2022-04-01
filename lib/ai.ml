@@ -4,7 +4,7 @@ open Abstract_set
 
 let update_instr (inst:instructions) s = 
   match inst with
-  |_-> s + 1
+  |_-> union 0 (s + 1)
 
 let rec update_block b s = 
   let rec nth_list l n = 
